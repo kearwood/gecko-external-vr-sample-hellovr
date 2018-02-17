@@ -85,7 +85,8 @@ int main(int argc, char **argv) {
   displayInfo.mSittingToStandingTransform[14] = 0.0f;
   displayInfo.mSittingToStandingTransform[15] = 1.0f;
 
-  for(int frame = 0; frame < 10000; frame++) {
+  for(int frame = 0; frame < 1000; frame++) {
+    fprintf(stdout, "Frame %i\n", frame);
     displayInfo.mFrameId++;
     gecko_vr_push_state(displayInfo);
     std::this_thread::sleep_for(std::chrono::milliseconds(11));
