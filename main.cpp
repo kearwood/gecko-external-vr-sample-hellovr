@@ -29,15 +29,13 @@ int main(int argc, char **argv) {
     return EXIT_FAILURE;
   }
 
-  VRDisplayInfo displayInfo;
-  memset(&displayInfo, 0, sizeof(displayInfo));
+  VRDisplayState displayState;
+  memset(&displayState, 0, sizeof(displayState));
 
-  displayInfo.mType = VRDeviceType::External;
-
-  strncpy(displayInfo.mDisplayName, "HelloVR HMD", kVRDisplayNameMaxLen);
-  displayInfo.mIsConnected = true;
-  displayInfo.mIsMounted = true;
-  displayInfo.mCapabilityFlags = (VRDisplayCapabilityFlags)((int)(VRDisplayCapabilityFlags::Cap_None) |
+  strncpy(displayState.mDisplayName, "HelloVR HMD", kVRDisplayNameMaxLen);
+  displayState.mIsConnected = true;
+  displayState.mIsMounted = true;
+  displayState.mCapabilityFlags = (VRDisplayCapabilityFlags)((int)(VRDisplayCapabilityFlags::Cap_None) |
                                   (int)VRDisplayCapabilityFlags::Cap_Orientation |
                                   (int)VRDisplayCapabilityFlags::Cap_Position |
                                   (int)VRDisplayCapabilityFlags::Cap_External |
@@ -45,8 +43,8 @@ int main(int argc, char **argv) {
                                   (int)VRDisplayCapabilityFlags::Cap_StageParameters |
                                   (int)VRDisplayCapabilityFlags::Cap_MountDetection);
 
-  displayInfo.mEyeResolution.width = 1280;
-  displayInfo.mEyeResolution.height = 800;
+  displayState.mEyeResolution.width = 1280;
+  displayState.mEyeResolution.height = 800;
 
   for (uint32_t eye = 0; eye < 2; ++eye) {
     float left, right, up, down;
@@ -56,40 +54,59 @@ int main(int argc, char **argv) {
     up = -0.785398f; // 45 degrees
     down = 0.785398f; // 45 degrees
 
-    displayInfo.mEyeFOV[eye].upDegrees = atan(up) * 180.0 / M_PI;
-    displayInfo.mEyeFOV[eye].rightDegrees = atan(right) * 180.0 / M_PI;
-    displayInfo.mEyeFOV[eye].downDegrees = atan(down) * 180.0 / M_PI;
-    displayInfo.mEyeFOV[eye].leftDegrees = atan(left) * 180.0 / M_PI;
+    displayState.mEyeFOV[eye].upDegrees = atan(up) * 180.0 / M_PI;
+    displayState.mEyeFOV[eye].rightDegrees = atan(right) * 180.0 / M_PI;
+    displayState.mEyeFOV[eye].downDegrees = atan(down) * 180.0 / M_PI;
+    displayState.mEyeFOV[eye].leftDegrees = atan(left) * 180.0 / M_PI;
   }
 
-  displayInfo.mStageSize.width = 1.0f;
-  displayInfo.mStageSize.height = 1.0f;
+  displayState.mStageSize.width = 1.0f;
+  displayState.mStageSize.height = 1.0f;
 
-  displayInfo.mSittingToStandingTransform[0] = 1.0f;
-  displayInfo.mSittingToStandingTransform[1] = 0.0f;
-  displayInfo.mSittingToStandingTransform[2] = 0.0f;
-  displayInfo.mSittingToStandingTransform[3] = 0.0f;
+  displayState.mSittingToStandingTransform[0] = 1.0f;
+  displayState.mSittingToStandingTransform[1] = 0.0f;
+  displayState.mSittingToStandingTransform[2] = 0.0f;
+  displayState.mSittingToStandingTransform[3] = 0.0f;
 
-  displayInfo.mSittingToStandingTransform[4] = 0.0f;
-  displayInfo.mSittingToStandingTransform[5] = 1.0f;
-  displayInfo.mSittingToStandingTransform[6] = 0.0f;
-  displayInfo.mSittingToStandingTransform[7] = 0.0f;
+  displayState.mSittingToStandingTransform[4] = 0.0f;
+  displayState.mSittingToStandingTransform[5] = 1.0f;
+  displayState.mSittingToStandingTransform[6] = 0.0f;
+  displayState.mSittingToStandingTransform[7] = 0.0f;
 
-  displayInfo.mSittingToStandingTransform[8] = 0.0f;
-  displayInfo.mSittingToStandingTransform[9] = 0.0f;
-  displayInfo.mSittingToStandingTransform[10] = 1.0f;
-  displayInfo.mSittingToStandingTransform[11] = 0.0f;
+  displayState.mSittingToStandingTransform[8] = 0.0f;
+  displayState.mSittingToStandingTransform[9] = 0.0f;
+  displayState.mSittingToStandingTransform[10] = 1.0f;
+  displayState.mSittingToStandingTransform[11] = 0.0f;
 
-  displayInfo.mSittingToStandingTransform[12] = 0.0f;
-  displayInfo.mSittingToStandingTransform[13] = 0.75f;
-  displayInfo.mSittingToStandingTransform[14] = 0.0f;
-  displayInfo.mSittingToStandingTransform[15] = 1.0f;
+  displayState.mSittingToStandingTransform[12] = 0.0f;
+  displayState.mSittingToStandingTransform[13] = 0.75f;
+  displayState.mSittingToStandingTransform[14] = 0.0f;
+  displayState.mSittingToStandingTransform[15] = 1.0f;
+
+  VRHMDSensorState sensorState;
+  sensorState.flags = (VRDisplayCapabilityFlags)(
+    (int)VRDisplayCapabilityFlags::Cap_Orientation |
+    (int)VRDisplayCapabilityFlags::Cap_Position);
+  sensorState.orientation[3] = 1.0f; // Default to an identity quaternion
 
   for(int frame = 0; frame < 1000; frame++) {
     fprintf(stdout, "Frame %i\n", frame);
-    displayInfo.mFrameId++;
-    gecko_vr_push_state(displayInfo);
+    gecko_vr_push_state(&displayState, &sensorState);
     std::this_thread::sleep_for(std::chrono::milliseconds(11));
+
+    sensorState.inputFrameID++;
+    sensorState.timestamp += 1.0f / 90.0f;
+  VRDisplayCapabilityFlags flags;
+
+  // These members will only change with inputFrameID:
+  float orientation[4];
+  float position[3];
+  float leftViewMatrix[16];
+  float rightViewMatrix[16];
+  float angularVelocity[3];
+  float angularAcceleration[3];
+  float linearVelocity[3];
+  float linearAcceleration[3];
   }
 
   gecko_vr_shutdown();
