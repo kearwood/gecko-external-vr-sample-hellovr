@@ -29,7 +29,9 @@ int main(int argc, char **argv) {
     return EXIT_FAILURE;
   }
 
-  VRDisplayState displayState;
+  VRSystemState state;
+
+  VRDisplayState& displayState = state.displayState;
   memset(&displayState, 0, sizeof(displayState));
 
   strncpy(displayState.mDisplayName, "HelloVR HMD", kVRDisplayNameMaxLen);
@@ -83,7 +85,7 @@ int main(int argc, char **argv) {
   displayState.mSittingToStandingTransform[14] = 0.0f;
   displayState.mSittingToStandingTransform[15] = 1.0f;
 
-  VRHMDSensorState sensorState;
+  VRHMDSensorState& sensorState = state.sensorState;
   sensorState.flags = (VRDisplayCapabilityFlags)(
     (int)VRDisplayCapabilityFlags::Cap_Orientation |
     (int)VRDisplayCapabilityFlags::Cap_Position);
@@ -91,7 +93,7 @@ int main(int argc, char **argv) {
 
   for(int frame = 0; frame < 1000; frame++) {
     fprintf(stdout, "Frame %i\n", frame);
-    gecko_vr_push_state(&displayState, &sensorState);
+    gecko_vr_push_state(state);
     std::this_thread::sleep_for(std::chrono::milliseconds(11));
 
     sensorState.inputFrameID++;
