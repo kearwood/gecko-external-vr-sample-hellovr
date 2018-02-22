@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
 #include <stdint.h>
 #include <assert.h>
@@ -15,6 +14,7 @@
 #include <sys/stat.h>        /* For mode constants */
 #include <fcntl.h>           /* For O_* constants */
 #include <errno.h>
+#include <unistd.h>
 #endif // defined(__APPLE__)
 
 #include "gecko_vr.h"
@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
   VRDisplayState& displayState = state.displayState;
   memset(&displayState, 0, sizeof(displayState));
 
-  strncpy(displayState.mDisplayName, "HelloVR HMD", kVRDisplayNameMaxLen);
+  strncpy_s(displayState.mDisplayName, "HelloVR HMD", kVRDisplayNameMaxLen);
   displayState.mIsConnected = true;
   displayState.mIsMounted = true;
   displayState.mCapabilityFlags = (VRDisplayCapabilityFlags)((int)(VRDisplayCapabilityFlags::Cap_None) |
@@ -98,17 +98,6 @@ int main(int argc, char **argv) {
 
     sensorState.inputFrameID++;
     sensorState.timestamp += 1.0f / 90.0f;
-  VRDisplayCapabilityFlags flags;
-
-  // These members will only change with inputFrameID:
-  float orientation[4];
-  float position[3];
-  float leftViewMatrix[16];
-  float rightViewMatrix[16];
-  float angularVelocity[3];
-  float angularAcceleration[3];
-  float linearVelocity[3];
-  float linearAcceleration[3];
   }
 
   gecko_vr_shutdown();
